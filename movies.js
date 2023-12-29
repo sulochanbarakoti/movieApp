@@ -1,4 +1,6 @@
 import { StatusBar } from "expo-status-bar";
+import { KeyboardAvoidingView, ScrollView } from "react-native";
+import axios from "axios";
 import {
   SafeAreaView,
   StyleSheet,
@@ -8,25 +10,87 @@ import {
   Image,
 } from "react-native";
 import pic from "./assets/avengers.jpg";
+import { useState } from "react";
+import { useEffect } from "react";
 
-export default function Movies({ navigation }) {
+export default function Movies({ route }) {
+  const { search } = route.params;
+  const [movieData, setMovieData] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(
+          "https://api.themoviedb.org/3/search/movie",
+          {
+            params: {
+              query: search,
+              include_adult: false,
+              language: "en-US",
+              page: 1,
+              api_key: "ffef4db96f8a2c0d5d2da1000dea09c6",
+            },
+          }
+        );
+        setMovieData(response.data.results);
+        const movies = response.data.results;
+
+        // Log movie titles to the console
+        movies.forEach((movie) => {
+          console.log("Movie Title:", movie.title);
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchData();
+  }, [search]);
+
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.searchContainer}>
-        <Image style={styles.image} source={pic} />
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <SafeAreaView style={styles.container}>
+          {movieData && (
+            <View>
+              {movieData.map((movie, index) => (
+                <View key={index} style={styles.searchContainer}>
+                  <Image
+                    key={index}
+                    style={styles.image}
+                    source={{
+                      uri: `https://image.tmdb.org/t/p/original${movie.backdrop_path}`,
+                    }}
+                  />
+                  <View style={styles.contain}>
+                    <Text style={styles.title}>{movie.original_title}</Text>
+                    <Text style={styles.description} numberOfLines={3}>
+                      {movie.overview}
+                    </Text>
+                    <Text style={{ fontWeight: "bold" }}>
+                      Date Published: {movie.release_date}
+                    </Text>
+                    <Text style={{ fontWeight: "bold" }}>
+                      Total Votes: {movie.vote_count}
+                    </Text>
+                    <Text style={{ fontWeight: "bold" }}>
+                      Average Rating: {movie.vote_average}
+                    </Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
+          {/* {movieData ? (
         <View>
-          <Text>Avengers: Endgame</Text>
-          <Text>
-            After the devastating events of Avengers: Infinity Wark the universe
-            is in ruins due to the efforts of the Mad Titan, Thanos.
-          </Text>
-          <Text>Date Published: 2019-04-24</Text>
-          <Text>Total Votes: 10954</Text>
-          <Text>Average Rating: 8.3</Text>
+          <Text>Data from API:</Text>
+          <Text>{JSON.stringify(movieData.results)}</Text>
         </View>
-      </View>
-      <View></View>
-    </SafeAreaView>
+      ) : (
+        <Text>Loading...</Text>
+      )} */}
+        </SafeAreaView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -36,14 +100,29 @@ const styles = StyleSheet.create({
     margin: 10,
   },
   image: {
-    height: 120,
-    width: 110,
-    marginLeft: 50,
+    height: "auto",
+    width: "30%",
+    borderRadius: 5,
+    margin: 10,
+  },
+  contain: {
+    flex: 1,
+    width: "70%",
+    paddingBottom: 10,
   },
   searchContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex",
     backgroundColor: "lightgrey",
+  },
+  title: {
+    fontSize: 18,
+    paddingTop: 5,
+    fontWeight: "bold",
+  },
+  discription: {
+    width: "auto",
+    paddingBottom: 5,
+    paddingTop: 5,
+    paddingRight: 5,
   },
 });

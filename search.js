@@ -1,4 +1,5 @@
 import { StatusBar } from "expo-status-bar";
+import { useState } from "react";
 import {
   Button,
   SafeAreaView,
@@ -9,6 +10,12 @@ import {
 } from "react-native";
 
 export default function Search({ navigation }) {
+  const [search, setSearch] = useState("");
+
+  const handelSearch = () => {
+    navigation.navigate("Movies", { search });
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View>
@@ -16,13 +23,11 @@ export default function Search({ navigation }) {
         <TextInput
           style={styles.input}
           placeholder="Movie name you want to search"
+          Text={search}
+          onChangeText={(text) => setSearch(text)}
         />
         <View style={styles.botton}>
-          <Button
-            title="SEARCH MOVIE"
-            color="green"
-            onPress={() => navigation.navigate("Movies")}
-          />
+          <Button title="SEARCH MOVIE" color="green" onPress={handelSearch} />
         </View>
       </View>
     </SafeAreaView>
